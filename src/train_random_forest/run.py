@@ -7,7 +7,7 @@ import logging
 import os
 import shutil
 import matplotlib.pyplot as plt
-
+import tempfile
 import mlflow
 import json
 
@@ -110,15 +110,21 @@ def go(args):
 
 
     # Upload the model we just exported to W&B
-    artifact = wandb.Artifact(
-        args.output_artifact,
-        type = 'model_export',
-        description = 'Trained ranfom forest artifact',
-        metadata = rf_config
+        artifact = wandb.Artifact(
+            args.output_artifact,
+            type = 'model_export',
+            description = 'Trained random forest artifact',
+            metadata = rf_config
     )
-    artifact.add_dir('random_forest_dir')
-    run.log_artifact(artifact)
+        artifact.add_dir(export_path)
+    
+    
+    
+    
+        run.log_artifact(artifact)
 
+
+        artifact.wait()
     # Plot feature importance
     fig_feat_imp = plot_feature_importance(sk_pipe, processed_features)
 
@@ -169,7 +175,7 @@ def get_inference_pipeline(rf_config, max_tfidf_features):
     # 1 - A SimpleImputer(strategy="most_frequent") to impute missing values
     # 2 - A OneHotEncoder() step to encode the variable
     non_ordinal_categorical_preproc = make_pipeline(
-        SimpleImputer(strategy="most frequent"),
+        SimpleImputer(strategy="most_frequent"),
         OneHotEncoder()
     )
     ######################################
